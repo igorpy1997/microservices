@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+  shop:
+    build: ./shop
+    command: ./entrypoint.sh
+    volumes:
+      - ./shop:/app
+    ports:
+      - "8000:8000"
+    depends_on:
+      - shop_database
+
+  warehouse:
+    build: ./warehouse
+    command: ./entrypoint.sh
+    volumes:
+      - ./warehouse:/app
+    ports:
+      - "8001:8001"
+    depends_on:
+      - warehouse_database
+
+  nginx:
+    build: ./docker/nginx  # Путь к каталогу с Dockerfile для nginx
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+      - ./static:/usr/share/nginx/html/static
+      - ./media:/usr/share/nginx/html/media
+    ports:
+      - "80:80"
+    depends_on:
+      - shop
+      - warehouse
+
+  shop_database:
+    image: postgres
+    environment:
+      POSTGRES_DB: shopdb
+      POSTGRES_USER: shopuser
+      POSTGRES_PASSWORD: shoppassword
+
+  warehouse_database:
+    image: postgres
+    environment:
+      POSTGRES_DB: warehousedb
+      POSTGRES_USER: warehouseuser
+      POSTGRES_PASSWORD: warehousepassword
